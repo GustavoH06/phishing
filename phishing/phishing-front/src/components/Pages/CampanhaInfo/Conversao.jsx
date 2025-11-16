@@ -1,5 +1,5 @@
+import Piechart from "../Home/Piechart";
 import "./campanhaInfo.css";
-import Piechart from '/workspaces/PhishingSiteFront/phishingfront/src/components/Pages/Home/Piechart'
 
 function Conversao() {
   return (
