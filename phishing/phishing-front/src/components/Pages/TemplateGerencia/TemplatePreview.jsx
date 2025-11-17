@@ -31,8 +31,8 @@ function TemplatePreview({ template }) {
       <div className="template-preview">
         {renderTemplateContent()}
       </div>
-      <div className="preview-info" style={{ marginTop: '10px', fontSize: '12px', color: '#666' }}>
-        <p><strong>Variáveis disponíveis:</strong> {{title}}, {{body}}, {{name}}, {{link}}</p>
+      <div className="preview-info">
+        <p><strong>Variáveis disponíveis:</strong> {'{{title}}'}, {'{{body}}'}, {'{{name}}'}, {'{{link}}'}</p>
       </div>
     </div>
   );

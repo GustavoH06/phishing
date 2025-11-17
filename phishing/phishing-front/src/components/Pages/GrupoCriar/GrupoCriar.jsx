@@ -8,16 +8,53 @@ function GrupoCriar() {
     name: '',
     desc: ''
   });
+  const [groupMembers, setGroupMembers] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [refreshTrigger, setRefreshTrigger] = useState(0);
+  const [showAddMemberModal, setShowAddMemberModal] = useState(false);
+  const [memberForm, setMemberForm] = useState({
+    name: '',
+    email: '',
+    person_code: ''
+  });
 
   const handleInputChange = (field, value) => {
     setFormData(prev => ({
       ...prev,
       [field]: value
     }));
+  };
+
+  const handleAddMember = () => {
+    setMemberForm({ name: '', email: '', person_code: '' });
+    setShowAddMemberModal(true);
+  };
+
+  const handleMemberSubmit = (e) => {
+    e.preventDefault();
+    
+    if (!memberForm.name.trim() || !memberForm.email.trim() || !memberForm.person_code.trim()) {
+      alert('Todos os campos são obrigatórios');
+      return;
+    }
+
+    // Adicionar membro à lista local
+    const newMember = {
+      id: Date.now(), // ID temporário para a lista local
+      name: memberForm.name,
+      email: memberForm.email,
+      person_code: memberForm.person_code
+    };
+
+    setGroupMembers(prev => [...prev, newMember]);
+    setShowAddMemberModal(false);
+    setMemberForm({ name: '', email: '', person_code: '' });
+  };
+
+  const handleRemoveMember = (memberId) => {
+    setGroupMembers(prev => prev.filter(member => member.id !== memberId));
   };
 
   const handleCreateGroup = async () => {
@@ -33,13 +70,20 @@ function GrupoCriar() {
 
       console.log('Criando grupo:', formData);
       
+      // Criar grupo com membros
       await groupService.createGroup({
         name: formData.name,
-        description: formData.desc || ''
+        description: formData.desc || '',
+        targets: groupMembers.map(member => ({
+          name: member.name,
+          email: member.email,
+          person_code: member.person_code
+        }))
       });
 
       setSuccess('Grupo criado com sucesso!');
       setFormData({ name: '', desc: '' });
+      setGroupMembers([]);
       
       setRefreshTrigger(prev => prev + 1);
       
@@ -53,8 +97,35 @@ function GrupoCriar() {
 
   const handleClearForm = () => {
     setFormData({ name: '', desc: '' });
+    setGroupMembers([]);
     setError('');
     setSuccess('');
+  };
+
+  const renderMembersList = () => {
+    if (groupMembers.length === 0) {
+      return (
+        <div className="no-members">
+          <span>Nenhum membro adicionado ao grupo</span>
+        </div>
+      );
+    }
+
+    return groupMembers.map((member) => (
+      <div key={member.id} className="membroItem">
+        <span className="member-name">{member.name}</span>
+        <span className="member-email">{member.email}</span>
+        <div className="member-actions">
+          <button 
+            className="btn-remove-member"
+            onClick={() => handleRemoveMember(member.id)}
+            title="Remover membro"
+          >
+            🗑️
+          </button>
+        </div>
+      </div>
+    ));
   };
 
   return (
@@ -114,17 +185,28 @@ function GrupoCriar() {
             </div>
 
             <div className="membrosSection">
-              <h3>Membros do Grupo</h3>
-              
               <div className="membrosHeader">
-                <span>Nome</span>
-                <span>E-mail</span>
+                <h3>Membros do Grupo</h3>
+                <div className="membrosHeaderActions">
+                  <button 
+                    className="btn-add-member"
+                    onClick={handleAddMember}
+                    title="Adicionar membro"
+                  >
+                    +
+                  </button>
+                </div>
               </div>
               
-              <div className="membrosList">
-                <div className="membroItem">
-                  <span>Funcionalidade em desenvolvimento</span>
-                  <span>Em breve você poderá adicionar membros</span>
+              <div className="membrosListContainer">
+                <div className="membrosListHeader">
+                  <span>Nome</span>
+                  <span>E-mail</span>
+                  <span>Ações</span>
+                </div>
+                
+                <div className="membrosList">
+                  {renderMembersList()}
                 </div>
               </div>
             </div>
@@ -148,6 +230,74 @@ function GrupoCriar() {
           </div>
         </div>
       </div>
+
+      {/* Modal para adicionar membro */}
+      {showAddMemberModal && (
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <div className="modal-header">
+              <h3>Adicionar Membro</h3>
+              <button 
+                className="btn-close-modal"
+                onClick={() => setShowAddMemberModal(false)}
+              >
+                ×
+              </button>
+            </div>
+            
+            <form onSubmit={handleMemberSubmit} className="member-form">
+              <div className="form-group">
+                <label>Nome *</label>
+                <input
+                  type="text"
+                  value={memberForm.name}
+                  onChange={(e) => setMemberForm(prev => ({ ...prev, name: e.target.value }))}
+                  placeholder="Digite o nome do membro"
+                  required
+                />
+              </div>
+              
+              <div className="form-group">
+                <label>E-mail *</label>
+                <input
+                  type="email"
+                  value={memberForm.email}
+                  onChange={(e) => setMemberForm(prev => ({ ...prev, email: e.target.value }))}
+                  placeholder="Digite o e-mail do membro"
+                  required
+                />
+              </div>
+              
+              <div className="form-group">
+                <label>Código da Pessoa *</label>
+                <input
+                  type="text"
+                  value={memberForm.person_code}
+                  onChange={(e) => setMemberForm(prev => ({ ...prev, person_code: e.target.value }))}
+                  placeholder="Digite o código único da pessoa"
+                  required
+                />
+              </div>
+              
+              <div className="modal-actions">
+                <button 
+                  type="button"
+                  className="btn-cancel"
+                  onClick={() => setShowAddMemberModal(false)}
+                >
+                  Cancelar
+                </button>
+                <button 
+                  type="submit"
+                  className="btn-save"
+                >
+                  Adicionar
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

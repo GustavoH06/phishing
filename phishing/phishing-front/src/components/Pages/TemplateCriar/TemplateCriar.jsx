@@ -1,12 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Editor } from '@tinymce/tinymce-react';
 import TemplateList from '../../Modules/TemplateList/TemplateList';
 import { templateService } from '../../services/templateService';
 import './templateCriar.css';
 
 function TemplateCriar() {
   const navigate = useNavigate();
+  const editorRef = useRef(null);
   
   const [formData, setFormData] = useState({
     name: '',
@@ -18,6 +18,91 @@ function TemplateCriar() {
   const [success, setSuccess] = useState('');
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   const [selectedTemplate, setSelectedTemplate] = useState(null);
+  const [editorLoaded, setEditorLoaded] = useState(false);
+
+  // Carregar o script do TinyMCE
+  useEffect(() => {
+    const script = document.createElement('script');
+    script.src = 'https://cdn.tiny.cloud/1/no-api-key/tinymce/8/tinymce.min.js';
+    script.referrerPolicy = 'origin';
+    script.crossOrigin = 'anonymous';
+    script.onload = () => {
+      // Inicializar o editor após o script carregar
+      if (window.tinymce) {
+        window.tinymce.init({
+          selector: '#template-editor',
+          height: 500,
+          menubar: true,
+          plugins: [
+            'advlist', 'autolink', 'lists', 'link', 'image', 'charmap', 'preview',
+            'anchor', 'searchreplace', 'visualblocks', 'visualchars', 'code', 'fullscreen',
+            'insertdatetime', 'media', 'table', 'help', 'wordcount'
+          ],
+          toolbar: 'undo redo | blocks | bold italic underline strikethrough | fontfamily fontsize | forecolor backcolor | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link image | removeformat | help',
+          content_style: `
+            body { 
+              font-family: Arial, sans-serif; 
+              font-size: 14px; 
+              line-height: 1.6;
+              margin: 0;
+              padding: 10px;
+              background-color: #f9f9f9;
+            }
+            .mce-content-body {
+              max-width: 600px;
+              margin: 0 auto;
+              background: white;
+              padding: 20px;
+              border-radius: 8px;
+              box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            }
+            h1 { color: #e50914; font-size: 28px; margin-bottom: 20px; }
+            h2 { color: #333; font-size: 22px; margin-bottom: 15px; }
+            p { margin-bottom: 15px; color: #333; }
+            a.btn { 
+              background-color: #e50914; 
+              color: white; 
+              padding: 12px 30px; 
+              text-decoration: none; 
+              border-radius: 4px; 
+              display: inline-block;
+              font-weight: bold;
+            }
+          `,
+          branding: false,
+          promotion: false,
+          statusbar: false,
+          setup: (editor) => {
+            editorRef.current = editor;
+            editor.on('init', () => {
+              setEditorLoaded(true);
+              if (formData.code) {
+                editor.setContent(formData.code);
+              }
+            });
+            editor.on('change', () => {
+              handleInputChange('code', editor.getContent());
+            });
+          }
+        });
+      }
+    };
+    document.head.appendChild(script);
+
+    // Cleanup
+    return () => {
+      if (window.tinymce) {
+        window.tinymce.remove('#template-editor');
+      }
+    };
+  }, []);
+
+  // Atualizar conteúdo do editor quando formData.code mudar
+  useEffect(() => {
+    if (editorRef.current && editorLoaded && formData.code) {
+      editorRef.current.setContent(formData.code);
+    }
+  }, [formData.code, editorLoaded]);
 
   const handleInputChange = (field, value) => {
     setFormData(prev => ({
@@ -25,10 +110,6 @@ function TemplateCriar() {
       [field]: value
     }));
     if (error) setError('');
-  };
-
-  const handleEditorChange = (content) => {
-    handleInputChange('code', content);
   };
 
   const handleTemplateSelect = (template) => {
@@ -69,7 +150,7 @@ function TemplateCriar() {
     }
 
     if (!formData.code.trim()) {
-      setError('Código HTML do template é obrigatório');
+      setError('Conteúdo do template é obrigatório');
       return;
     }
 
@@ -115,105 +196,45 @@ function TemplateCriar() {
     setSelectedTemplate(null);
   };
 
-  const loadTemplateExample = () => {
-    const exampleTemplate = `
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="UTF-8">
-    <style>
-        body { 
-            font-family: Arial, sans-serif; 
-            margin: 0; 
-            padding: 20px; 
-            background-color: #f4f4f4; 
-            line-height: 1.6;
-        }
-        .container { 
-            max-width: 600px; 
-            margin: 0 auto; 
-            background: white; 
-            padding: 30px; 
-            border-radius: 8px; 
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-        .header { 
-            text-align: center; 
-            padding-bottom: 20px; 
-            border-bottom: 2px solid #e50914; 
-            margin-bottom: 20px;
-        }
-        .header h1 { 
-            color: #e50914; 
-            margin: 0; 
-            font-size: 28px;
-        }
-        .content { 
-            margin: 25px 0; 
-            color: #333;
-        }
-        .content h2 {
-            color: #e50914;
-            margin-bottom: 15px;
-        }
-        .button { 
-            display: inline-block; 
-            background-color: #e50914; 
-            color: white; 
-            padding: 12px 30px; 
-            text-decoration: none; 
-            border-radius: 4px; 
-            font-weight: bold;
-            margin: 15px 0;
-        }
-        .footer { 
-            border-top: 1px solid #ddd; 
-            padding-top: 20px; 
-            font-size: 12px; 
-            color: #999; 
-            text-align: center; 
-            margin-top: 20px;
-        }
-        .warning {
-            background-color: #fff3cd;
-            border: 1px solid #ffeaa7;
-            padding: 10px;
-            border-radius: 4px;
-            margin: 15px 0;
-            font-size: 14px;
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <div class="header">
-            <h1>{{title}}</h1>
-        </div>
-        <div class="content">
-            <h2>Olá {{name}},</h2>
-            <p>{{body}}</p>
-            
-            <div class="warning">
-                <strong>Importante:</strong> Esta é uma mensagem importante que requer sua atenção.
-            </div>
-            
-            <p>Para prosseguir, clique no botão abaixo:</p>
-            <a href="{{link}}" class="button">Clique Aqui para Continuar</a>
-            
-            <p>Se você tiver qualquer dúvida, não hesite em entrar em contato conosco.</p>
-        </div>
-        <div class="footer">
-            <p>&copy; 2024 Sua Empresa. Todos os direitos reservados.</p>
-            <p>Esta é uma mensagem automática, por favor não responda este email.</p>
-        </div>
+  const loadTemplateBase = () => {
+    const baseTemplate = `
+<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #f4f4f4; padding: 20px;">
+  <div style="background: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+    
+    <!-- CABEÇALHO - EDITÁVEL -->
+    <div style="text-align: center; padding-bottom: 20px; border-bottom: 2px solid #e50914; margin-bottom: 20px;">
+      <h1 style="color: #e50914; margin: 0; font-size: 28px;">{{title}}</h1>
     </div>
-</body>
-</html>
+    
+    <!-- CONTEÚDO PRINCIPAL - EDITÁVEL -->
+    <div style="margin: 25px 0; color: #333;">
+      <h2 style="color: #333; margin-bottom: 15px;">Olá {{name}},</h2>
+      
+      <!-- ÁREA EDITÁVEL PARA O CORPO DO EMAIL -->
+      <div style="font-size: 16px; line-height: 1.6;">
+        {{body}}
+      </div>
+      
+      <!-- BOTÃO - EDITÁVEL -->
+      <div style="text-align: center; margin: 25px 0;">
+        <a href="{{link}}" style="display: inline-block; background-color: #e50914; color: white; padding: 12px 30px; text-decoration: none; border-radius: 4px; font-weight: bold; font-size: 16px;">
+          Clique Aqui
+        </a>
+      </div>
+    </div>
+    
+    <!-- RODAPÉ - EDITÁVEL -->
+    <div style="border-top: 1px solid #ddd; padding-top: 20px; font-size: 12px; color: #999; text-align: center;">
+      <p>Esta é uma mensagem automática, por favor não responda este email.</p>
+    </div>
+    
+  </div>
+</div>
     `.trim();
 
     setFormData(prev => ({
       ...prev,
-      code: exampleTemplate
+      code: baseTemplate
     }));
     setError('');
   };
@@ -222,15 +243,15 @@ function TemplateCriar() {
     if (!formData.code) {
       return (
         <div className="preview-placeholder">
-          O preview do template será exibido aqui quando você inserir o código HTML
+          O preview do template será exibido aqui quando você criar o conteúdo
         </div>
       );
     }
 
     const previewHtml = formData.code
-      .replace(/{{title}}/g, 'Exemplo de Título')
-      .replace(/{{body}}/g, 'Este é um exemplo do conteúdo do corpo do email. Aqui você pode incluir informações importantes para o destinatário.')
-      .replace(/{{name}}/g, 'João Silva')
+      .replace(/{{title}}/g, 'Título do Seu Email')
+      .replace(/{{body}}/g, '<p>Este é o conteúdo principal do seu email. Use o editor acima para personalizar completamente esta área com textos, imagens, formatações e muito mais!</p><p>Você pode adicionar quantos parágrafos quiser e formatar o texto como desejar.</p>')
+      .replace(/{{name}}/g, 'Nome do Destinatário')
       .replace(/{{link}}/g, '#');
 
     return (
@@ -331,34 +352,37 @@ function TemplateCriar() {
 
                 <div className="formGroup">
                   <div className="editor-header">
-                    <label>Código HTML *</label>
+                    <label>Conteúdo do Template *</label>
                     <button 
                       type="button" 
-                      onClick={loadTemplateExample}
+                      onClick={loadTemplateBase}
                       className="btn-exemplo"
+                      disabled={!editorLoaded}
                     >
-                      Carregar Exemplo
+                      Template Base
                     </button>
                   </div>
                   
-                  <Editor
-                    apiKey='sua-api-key-do-tinymce'
-                    value={formData.code}
-                    onEditorChange={handleEditorChange}
-                    init={{
-                      height: 400,
-                      menubar: true,
-                      plugins: [
-                        'advlist', 'autolink', 'lists', 'link', 'image', 'charmap', 'preview',
-                        'anchor', 'searchreplace', 'visualblocks', 'code', 'fullscreen',
-                        'insertdatetime', 'media', 'table', 'code', 'help', 'wordcount'
-                      ],
-                      toolbar: 'undo redo | blocks | bold italic forecolor | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | removeformat | help | code',
-                      content_style: 'body { font-family:Helvetica,Arial,sans-serif; font-size:14px }',
-                      placeholder: 'Digite o código HTML do template aqui...'
-                    }}
-                    disabled={loading}
+                  <textarea 
+                    id="template-editor"
+                    style={{ display: 'none' }}
                   />
+                  
+                  {!editorLoaded && (
+                    <div className="editor-loading">
+                      <p>Carregando editor...</p>
+                    </div>
+                  )}
+                  
+                  <div className="editor-help">
+                    <p><strong>Como usar:</strong></p>
+                    <ul>
+                      <li>Use o botão "Template Base" para começar com uma estrutura básica</li>
+                      <li>Personalize o layout, cores, fontes e conteúdo como desejar</li>
+                      <li>Mantenha as variáveis <code>{'{{title}}'}</code>, <code>{'{{body}}'}</code>, <code>{'{{name}}'}</code> e <code>{'{{link}}'}</code> nos locais apropriados</li>
+                      <li>Estas variáveis serão preenchidas automaticamente quando criar uma campanha</li>
+                    </ul>
+                  </div>
                 </div>
               </div>
             </div>

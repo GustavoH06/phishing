@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import TemplateList from "./TemplateList.jsx";
 import TemplateDetalhes from "./TemplateDetalhes.jsx";
 import TemplatePreview from "./TemplatePreview.jsx";
@@ -16,9 +16,20 @@ function TemplatesGerencia() {
     tipo: ''
   });
 
+  const location = useLocation();
+
   useEffect(() => {
     loadTemplates();
   }, []);
+
+  // Efeito para recarregar templates quando vier da criação
+  useEffect(() => {
+    if (location.state?.refresh) {
+      loadTemplates();
+      // Limpa o state para não recarregar novamente
+      window.history.replaceState({}, document.title);
+    }
+  }, [location.state]);
 
   const loadTemplates = async (filterParams = {}) => {
     setLoading(true);
@@ -71,7 +82,10 @@ function TemplatesGerencia() {
       <div className="gTemplatesContainer">
         <div className="gerenciaTitle">
           <h2>Templates</h2>
-          <Link to="/templateCriar" state={{ onTemplateCreated: handleTemplateCreated }}>
+          <Link 
+            to="/templateCriar" 
+            state={{ refresh: true }}
+          >
             <span>Novo Template</span>
           </Link>
         </div>

@@ -5,10 +5,10 @@ import CampanhaGerencia from './components/Pages/CampanhaGerencia/CampanhaGerenc
 import CampanhaInfo from './components/Pages/CampanhaInfo/CampanhaInfo';
 import CampanhaCriar from './components/Pages/CampanhaCriar/CampanhaCriar';
 import GrupoCriar from './components/Pages/GrupoCriar/GrupoCriar';
-import GrupoGerencia from './components/Pages/GruposGerenciar/GrupoGerencia';
-import TemplatesGerencia from "./components/Pages/TemplateGerenci/TemplatesGerencia";
+import TemplatesGerencia from "./components/Pages/TemplateGerencia/TemplatesGerencia";
 import TemplateCriar from "./components/Pages/TemplateCriar/TemplateCriar";
 import LoginAdmin from "./components/Pages/Login/Login";
+import GrupoGerencia from "./components/Pages/GrupoGerenciar/GrupoGerencia.jsx";
 
 
 function App() {

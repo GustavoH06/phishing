@@ -305,3 +305,13 @@
   text-align: center;
   padding: 40px 20px;
 }
+
+.preview-info {
+  margin-top: 10px;
+  font-size: 12px;
+  color: #666;
+}
+
+.preview-info p {
+  margin: 0;
+}
