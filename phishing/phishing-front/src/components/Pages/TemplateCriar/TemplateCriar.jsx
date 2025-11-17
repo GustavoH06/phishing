@@ -249,9 +249,9 @@ function TemplateCriar() {
     }
 
     const previewHtml = formData.code
-      .replace(/{{title}}/g, 'Título do Seu Email')
-      .replace(/{{body}}/g, '<p>Este é o conteúdo principal do seu email. Use o editor acima para personalizar completamente esta área com textos, imagens, formatações e muito mais!</p><p>Você pode adicionar quantos parágrafos quiser e formatar o texto como desejar.</p>')
-      .replace(/{{name}}/g, 'Nome do Destinatário')
+      .replace(/{{title}}/g, 'Título placeholder')
+      .replace(/{{body}}/g, '<p>Conteudo placeholder.</p>')
+      .replace(/{{name}}/g, 'Nome placholder')
       .replace(/{{link}}/g, '#');
 
     return (
@@ -302,31 +302,6 @@ function TemplateCriar() {
                 </div>
               )}
 
-              <div className="variables-info">
-                <h4>Variáveis Disponíveis:</h4>
-                <div className="variables-grid">
-                  <div className="variable-item">
-                    <code className="variable-code">{'{{title}}'}</code>
-                    <span>Título do email</span>
-                  </div>
-                  <div className="variable-item">
-                    <code className="variable-code">{'{{body}}'}</code>
-                    <span>Corpo do email</span>
-                  </div>
-                  <div className="variable-item">
-                    <code className="variable-code">{'{{name}}'}</code>
-                    <span>Nome do destinatário</span>
-                  </div>
-                  <div className="variable-item">
-                    <code className="variable-code">{'{{link}}'}</code>
-                    <span>Link para clique</span>
-                  </div>
-                </div>
-                <p className="variables-warning">
-                  <strong>Importante:</strong> Todas as variáveis devem estar presentes no template!
-                </p>
-              </div>
-              
               <div className="formGrupo">
                 <div className="formGroup">
                   <label>Nome do Template *</label>
@@ -373,16 +348,7 @@ function TemplateCriar() {
                       <p>Carregando editor...</p>
                     </div>
                   )}
-                  
-                  <div className="editor-help">
-                    <p><strong>Como usar:</strong></p>
-                    <ul>
-                      <li>Use o botão "Template Base" para começar com uma estrutura básica</li>
-                      <li>Personalize o layout, cores, fontes e conteúdo como desejar</li>
-                      <li>Mantenha as variáveis <code>{'{{title}}'}</code>, <code>{'{{body}}'}</code>, <code>{'{{name}}'}</code> e <code>{'{{link}}'}</code> nos locais apropriados</li>
-                      <li>Estas variáveis serão preenchidas automaticamente quando criar uma campanha</li>
-                    </ul>
-                  </div>
+                
                 </div>
               </div>
             </div>
