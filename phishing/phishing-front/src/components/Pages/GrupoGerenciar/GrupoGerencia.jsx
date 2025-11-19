@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import GroupList from '../../Modules/GroupList/GroupList';
+import GroupList from '../GrupoCriar/GrupoCriarComponents/GroupList';
 import { groupService } from '../../services/groupService';
 import './grupoGerencia.css';
 
@@ -168,6 +168,9 @@ function GrupoGerencia() {
 
   return (
     <div className="mainContainer">
+      <div className="hSidenav">
+      </div>
+
       <div className="gGerenciarContainer">
         <div className="campanhaTitle">
           <h2>Grupos</h2>

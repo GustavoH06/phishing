@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { groupService } from '../../services/groupService';
+import { groupService } from '../../../services/groupService';
 import './groupList.css';
 
 const GroupList = ({ onGroupSelect, selectedGroupId, refreshTrigger }) => {

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { campaignService } from '../../services/campaignService';
 import './campaignListInfo.css';
+import { campaignService } from '../../../../services/campaignService';
 
 function CampaignListInfo({ filters, refreshTrigger }) {
     const [campaigns, setCampaigns] = useState([]);
@@ -22,9 +22,7 @@ function CampaignListInfo({ filters, refreshTrigger }) {
             setLoading(true);
             setError('');
             
-            console.log('Carregando campanhas com filtros:', filters);
             const response = await campaignService.getCampaigns(filters);
-            
             const campaignsData = response.items || response;
             setCampaigns(Array.isArray(campaignsData) ? campaignsData : []);
             
@@ -45,7 +43,7 @@ function CampaignListInfo({ filters, refreshTrigger }) {
 
     const formatTime = (timeString) => {
         if (!timeString) return 'N/A';
-        return timeString.substring(0, 5); // Formato HH:MM
+        return timeString.substring(0, 5);
     };
 
     const getStatusBadge = (status) => {
@@ -58,19 +56,10 @@ function CampaignListInfo({ filters, refreshTrigger }) {
         const config = statusConfig[status] || { text: 'Desconhecido', color: '#666', borderColor: '#666' };
         
         return (
-            <span 
-                style={{ 
-                    border: `1px solid ${config.borderColor}`,
-                    color: config.color,
-                    padding: '4px 10px',
-                    borderRadius: '12px',
-                    fontSize: '0.8rem',
-                    textAlign: 'center',
-                    justifySelf: 'start',
-                    whiteSpace: 'nowrap',
-                    width: '80px'
-                }}
-            >
+            <span className="statusBadge" style={{ 
+                borderColor: config.borderColor,
+                color: config.color
+            }}>
                 {config.text}
             </span>
         );
@@ -78,7 +67,7 @@ function CampaignListInfo({ filters, refreshTrigger }) {
 
     if (loading) {
         return (
-            <div className="loading-state">
+            <div className="loadingState">
                 <div className="spinner"></div>
                 <p>Carregando campanhas...</p>
             </div>
@@ -87,7 +76,7 @@ function CampaignListInfo({ filters, refreshTrigger }) {
 
     if (error) {
         return (
-            <div className="error-message">
+            <div className="errorMessage">
                 {error}
             </div>
         );
@@ -108,7 +97,7 @@ function CampaignListInfo({ filters, refreshTrigger }) {
 
             <div className="cGerenciaList">
                 {campaigns.length === 0 ? (
-                    <div className="empty-state">
+                    <div className="emptyState">
                         Nenhuma campanha encontrada
                     </div>
                 ) : (
@@ -117,7 +106,6 @@ function CampaignListInfo({ filters, refreshTrigger }) {
                             key={campaign.id} 
                             className="cGerenciaCard"
                             onClick={() => handleCampaignClick(campaign)}
-                            style={{ cursor: 'pointer' }}
                         >
                             <span>{campaign.id}</span>
                             <span>{campaign.name}</span>

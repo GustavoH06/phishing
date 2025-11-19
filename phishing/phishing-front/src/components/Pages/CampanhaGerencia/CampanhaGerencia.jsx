@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import CampaignListInfo from "../../Modules/CampaignListInfo/CampaignListInfo";
 import { groupService } from '../../services/groupService';
 import { templateService } from '../../services/templateService';
 import './campanhaGerencia.css';
+import CampaignListInfo from './CampanhaGerenciaComponents/CampaignListInfo/CampaignListInfo';
 
 function CampanhaGerencia() {
     const [filters, setFilters] = useState({
@@ -20,7 +20,7 @@ function CampanhaGerencia() {
     const [templates, setTemplates] = useState([]);
     const [refreshTrigger, setRefreshTrigger] = useState(0);
 
-    React.useEffect(() => {
+    useEffect(() => {
         loadGroups();
         loadTemplates();
     }, []);
@@ -70,11 +70,13 @@ function CampanhaGerencia() {
 
     return (
         <div className="mainContainer">
+            <div className="hSidenav"></div>
+            
             <div className="cFilterContent">
                 <div className="campanhaTitle">
                     <h2>Campanhas</h2>
-                    <Link to="/campanhaCriar">
-                        <span>Nova Campanha</span>
+                    <Link to="/campanhaCriar" className="btnNovaCampanha">
+                        Nova Campanha
                     </Link>
                 </div>
 
@@ -153,10 +155,10 @@ function CampanhaGerencia() {
                     </div>
 
                     <div className="cFilterButtons">
-                        <button className="btn-search" onClick={handleSearch}>
+                        <button className="btnSearch" onClick={handleSearch}>
                             Pesquisar
                         </button>
-                        <button className="btn-clear" onClick={handleClearFilters}>
+                        <button className="btnClear" onClick={handleClearFilters}>
                             Limpar Filtros
                         </button>
                     </div>

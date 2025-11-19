@@ -28,48 +28,28 @@ export const campaignService = {
     try {
       console.log('Criando nova campanha:', campaignData);
       
-      // Validar campos obrigatórios antes de enviar
-      const requiredFields = ['name', 'group_id', 'email', 'start_date', 'end_date', 'send_time'];
-      const missingFields = requiredFields.filter(field => !campaignData[field]);
-      
-      if (missingFields.length > 0) {
-        throw new Error(`Campos obrigatórios faltando: ${missingFields.join(', ')}`);
-      }
-      
+      // DEBUG: Verificar exatamente o que está sendo enviado
       const formData = new FormData();
       
-      // Campos obrigatórios
-      formData.append('name', campaignData.name);
-      formData.append('group_id', campaignData.group_id);
-      formData.append('email', campaignData.email);
-      formData.append('start_date', campaignData.start_date);
-      formData.append('end_date', campaignData.end_date);
-      formData.append('send_time', campaignData.send_time);
+      // Campos que o backend espera (baseado no erro de validação)
+      formData.append('name', campaignData.name || '');
+      formData.append('group_id', campaignData.group_id || '');
+      formData.append('template_id', campaignData.template_id || '');
+      formData.append('start_date', campaignData.start_date || '');
+      formData.append('end_date', campaignData.end_date || '');
+      formData.append('send_time', campaignData.send_time || '');
+      formData.append('subject_text', campaignData.subject_text || '');
+      formData.append('title_text', campaignData.title_text || '');
+      formData.append('body_text', campaignData.body_text || '');
+      formData.append('button_text', campaignData.button_text || '');
+      formData.append('email', campaignData.email || '');
       
-      // Campos opcionais (só adicionar se existirem)
-      if (campaignData.template_id) {
-        formData.append('template_id', campaignData.template_id);
-      }
-      if (campaignData.subject_text) {
-        formData.append('subject_text', campaignData.subject_text);
-      }
-      if (campaignData.title_text) {
-        formData.append('title_text', campaignData.title_text);
-      }
-      if (campaignData.body_text) {
-        formData.append('body_text', campaignData.body_text);
-      }
-      if (campaignData.button_text) {
-        formData.append('button_text', campaignData.button_text);
-      }
-      if (campaignData.desc) {
-        formData.append('desc', campaignData.desc);
-      }
-      
-      console.log('Dados sendo enviados:');
+      // Log detalhado dos dados
+      console.log('=== DETALHES DO ENVIO ===');
       for (let [key, value] of formData.entries()) {
-        console.log(`${key}: ${value}`);
+        console.log(`${key}:`, value);
       }
+      console.log('=========================');
       
       const response = await api.post('/campaign/', formData, {
         headers: {
@@ -83,16 +63,31 @@ export const campaignService = {
     } catch (error) {
       console.error('Erro ao criar campanha:', error);
       
-      // Log mais detalhado do erro
-      if (error.response?.data) {
-        console.error('Resposta do servidor:', error.response.data);
+      // DEBUG detalhado do erro
+      if (error.response) {
+        console.error('Status:', error.response.status);
+        console.error('Headers:', error.response.headers);
+        console.error('Data:', error.response.data);
+        
+        // Tentar extrair mensagem mais específica
+        const serverError = error.response.data;
+        let errorMessage = 'Erro ao criar campanha';
+        
+        if (serverError.message) {
+          errorMessage = serverError.message;
+        } else if (serverError.error) {
+          errorMessage = serverError.error;
+        } else if (typeof serverError === 'string') {
+          errorMessage = serverError;
+        } else if (serverError.details) {
+          // Se for um erro de validação com detalhes
+          errorMessage = `Erro de validação: ${JSON.stringify(serverError.details)}`;
+        }
+        
+        throw new Error(errorMessage);
       }
       
-      const errorMsg = error.response?.data?.message || 
-                      error.response?.data?.error || 
-                      error.message ||
-                      'Erro ao criar campanha';
-      throw new Error(errorMsg);
+      throw new Error(error.message || 'Erro ao criar campanha');
     }
   },
 

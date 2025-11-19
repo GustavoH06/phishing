@@ -3,15 +3,14 @@
   justify-content: center;
   align-items: center;
   min-height: 100vh;
-  background: #EDF1F4;
-  padding: 20px;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: var(--bg-primary);
+  padding: var(--spacing-lg);
 }
 
 .loginCard {
-  background: white;
+  background: var(--bg-white);
   padding: 40px;
-  border-radius: 15px;
+  border-radius: var(--border-radius-xl);
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
   width: 100%;
   max-width: 450px;
@@ -34,120 +33,16 @@
   margin-bottom: 30px;
 }
 
-.header h2 {
-  color: #2d3748;
-  margin-bottom: 8px;
-  font-size: 28px;
-  font-weight: 700;
-}
-
-.formGroup {
-  margin-bottom: 24px;
-}
-
-.formLabel {
-  display: block;
-  margin-bottom: 8px;
-  font-weight: 600;
-  color: #4a5568;
-  font-size: 14px;
-}
-
-.formInput {
-  width: 100%;
-  padding: 12px 16px;
-  border: 2px solid #e2e8f0;
-  border-radius: 8px;
-  font-size: 16px;
-  transition: all 0.3s ease;
-  background-color: #f7fafc;
-}
-
-.formInput:focus {
-  outline: none;
-  border-color: #4299e1;
-  background-color: white;
-  box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.1);
-}
-
-.formInput:disabled {
-  background-color: #edf2f7;
-  cursor: not-allowed;
-  opacity: 0.6;
-}
-
-.btn {
-  width: 100%;
-  padding: 14px;
-  border: none;
-  border-radius: 8px;
-  font-size: 16px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
+.actionsSection {
   display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-}
-
-.btn:disabled {
-  cursor: not-allowed;
-  opacity: 0.6;
-}
-
-.btnPrimary {
-  background: linear-gradient(135deg, #4299e1, #3182ce);
-  color: white;
-}
-
-.btnPrimary:hover:not(:disabled) {
-  background: linear-gradient(135deg, #3182ce, #2c5aa0);
-  transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(66, 153, 225, 0.3);
-}
-
-.btnSecondary {
-  background: #48bb78;
-  color: white;
-}
-
-.btnSecondary:hover:not(:disabled) {
-  background: #38a169;
-  transform: translateY(-2px);
-}
-
-.btnDanger {
-  background: #f56565;
-  color: white;
-}
-
-.btnDanger:hover:not(:disabled) {
-  background: #e53e3e;
-  transform: translateY(-2px);
-}
-
-.loginBtn.loading {
-  background: #a0aec0;
-}
-
-.spinner {
-  width: 16px;
-  height: 16px;
-  border: 2px solid transparent;
-  border-top: 2px solid white;
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  margin-bottom: 25px;
 }
 
 .alert {
   padding: 16px;
-  border-radius: 8px;
+  border-radius: var(--border-radius);
   margin: 20px 0;
   font-weight: 500;
   text-align: center;
@@ -165,45 +60,12 @@
   color: #c53030;
 }
 
-.actionsSection {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  margin-bottom: 25px;
-}
-
-.debugInfo {
-  background: #1a202c;
-  color: #e2e8f0;
-  padding: 16px;
-  border-radius: 8px;
-  font-size: 12px;
-  margin-top: 20px;
-}
-
-.debugInfo h4 {
-  margin-top: 0;
-  margin-bottom: 8px;
-  color: #90cdf4;
-}
-
-.debugInfo pre {
-  margin: 0;
-  white-space: pre-wrap;
-  word-wrap: break-word;
-}
-
-/* Responsividade */
 @media (max-width: 480px) {
   .loginContainer {
-    padding: 10px;
+    padding: var(--spacing-sm);
   }
   
   .loginCard {
     padding: 25px;
-  }
-  
-  .header h2 {
-    font-size: 24px;
   }
 }

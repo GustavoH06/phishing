@@ -1,18 +1,7 @@
-.mainContainer {
-  display: flex;
-  background-color: #EDF1F4;
-  font-weight: bold;
-}
-
-.hSidenav {
-  width: 5%;
-  min-width: 80px;
-}
-
 .hContent {
   display: flex;
   flex: 1;
-  color: #313131;
+  color: var(--text-primary);
 }
 
 .hSectionLeft {
@@ -26,24 +15,10 @@
 }
 
 .generalView {
-  background-color: #fff;
-  border-radius: 15px;
+  background-color: var(--bg-white);
+  border-radius: var(--border-radius-xl);
   margin-top: 45px;
   filter: drop-shadow(0 0 20px #00000010);
-}
-
-.generalView h2 {
-  padding: 15px 0 15px 30px;
-}
-
-.cItem h4 {
-  padding-top: 15px;
-  font-size: 15px;
-  color: #8C8C8C;
-}
-
-.cItem h3 {
-  font-size: 30px;
 }
 
 .campanhaInfo {
@@ -63,21 +38,11 @@
   border-radius: 50%;
 }
 
-.campaign h2 {
-  padding: 20px 0;
-  font-size: 40px;
-  color: #313131;
-}
-
-.campaign {
-  color: #313131;
-}
-
 .cCardInfo {
-  padding: 20px;
-  font-size: 15px;
-  background-color: #fff;
-  border-radius: 10px;
+  padding: var(--spacing-lg);
+  font-size: var(--font-md);
+  background-color: var(--bg-white);
+  border-radius: var(--border-radius-lg);
   filter: drop-shadow(0 0 20px #00000010);
 }
 
@@ -92,7 +57,7 @@
   flex-direction: column;
   justify-content: space-between;
   width: 100%;
-  gap: 10px;
+  gap: var(--spacing-sm);
 }
 
 .cLastSectionUpper,
@@ -106,7 +71,7 @@
 .cLastSectionLeft,
 .cLastSectionRight {
   font-size: 17px;
-  color: #8C8C8C;
+  color: var(--text-light);
   width: 50%;
   display: flex;
   flex-direction: column;
@@ -114,28 +79,15 @@
 }
 
 .cardCounter {
-  color: #313131;
+  color: var(--text-primary);
   font-size: 160%;
 }
 
-.cLastSection span {
-  padding-left: 5px;
-}
-
-.cLastGroup {
-  padding: 20px 0;
-}
-
-.campaignLast h2 {
-  padding-bottom: 20px;
-}
-
-/* Classes para o botão de refresh */
 .campaignHeader {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px;
+  margin-bottom: var(--spacing-lg);
 }
 
 .btnRefresh {
@@ -143,7 +95,7 @@
   color: white;
   border: none;
   padding: 10px 20px;
-  border-radius: 8px;
+  border-radius: var(--border-radius);
   cursor: pointer;
   font-weight: 600;
   transition: all 0.3s ease;
@@ -152,9 +104,4 @@
 .btnRefresh:hover:not(:disabled) {
   background: #3182ce;
   transform: translateY(-2px);
-}
-
-.btnRefresh:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
 }

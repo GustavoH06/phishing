@@ -23,7 +23,7 @@ function TemplateCriar() {
     name: '',
     desc: '',
     code: '',
-    preview_data: '' // Novo campo para salvar o preview
+    preview_data: ''
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -48,12 +48,10 @@ function TemplateCriar() {
   const handleEditorChange = (e) => {
     const htmlContent = e.target.value;
     handleInputChange('code', htmlContent);
-    // Atualizar preview em tempo real
     updatePreviewData(htmlContent);
   };
 
   const updatePreviewData = (htmlContent) => {
-    // Criar o preview com as variáveis substituídas
     const previewHtml = htmlContent
       .replace(/{{title}}/g, previewVariables.title)
       .replace(/{{body}}/g, previewVariables.body)
@@ -61,7 +59,6 @@ function TemplateCriar() {
       .replace(/{{link}}/g, '#')
       .replace(/{{button_text}}/g, previewVariables.button_text);
 
-    // Salvar no formData
     setFormData(prev => ({
       ...prev,
       preview_data: previewHtml
@@ -74,7 +71,6 @@ function TemplateCriar() {
       [variable]: value
     }));
     
-    // Atualizar preview quando variáveis mudarem
     if (formData.code) {
       updatePreviewData(formData.code);
     }
@@ -100,9 +96,7 @@ function TemplateCriar() {
         preview_data: template.preview_data || ''
       });
 
-      // Se existir preview_data, extrair as variáveis
       if (template.preview_data) {
-        // Aqui você pode extrair os valores padrão do preview se quiser
       }
     } catch (err) {
       console.error('Erro ao carregar template:', err);
@@ -142,7 +136,6 @@ function TemplateCriar() {
       setError('');
       setSuccess('');
 
-      // Garantir que o preview_data está atualizado
       const finalPreviewData = formData.preview_data || formData.code;
 
       if (selectedTemplate) {
@@ -150,7 +143,7 @@ function TemplateCriar() {
           name: formData.name,
           description: formData.desc || '',
           code: formData.code,
-          preview_data: finalPreviewData // Salvar o preview
+          preview_data: finalPreviewData
         });
         setSuccess('Template atualizado com sucesso!');
       } else {
@@ -158,7 +151,7 @@ function TemplateCriar() {
           name: formData.name,
           description: formData.desc || '',
           code: formData.code,
-          preview_data: finalPreviewData // Salvar o preview
+          preview_data: finalPreviewData
         });
         setSuccess('Template criado com sucesso!');
       }
@@ -234,6 +227,9 @@ function TemplateCriar() {
 
   return (
     <div className="mainContainer">
+      <div className="hSidenav">
+      </div>
+
       <div className="gCriarContainer">
         <div className="campanhaTitle">
           <h2>{selectedTemplate ? 'Editar Template' : 'Criar Template'}</h2>
@@ -335,7 +331,6 @@ function TemplateCriar() {
                   </Editor>
                 </div>
 
-                {/* Configuração das Variáveis do Preview */}
                 <div className="previewVariablesConfig">
                   <h4>Configurar Preview:</h4>
                   <div className="variablesInputs">
@@ -369,7 +364,7 @@ function TemplateCriar() {
                     <div className="variableInput full-width">
                       <label>Corpo do Email:</label>
                       <textarea 
-                        value={previewVariables.body.replace(/<[^>]*>/g, '')} // Remover HTML para edição
+                        value={previewVariables.body.replace(/<[^>]*>/g, '')}
                         onChange={(e) => handlePreviewVariableChange('body', `<p>${e.target.value}</p>`)}
                         placeholder="Conteúdo do email"
                         rows="3"

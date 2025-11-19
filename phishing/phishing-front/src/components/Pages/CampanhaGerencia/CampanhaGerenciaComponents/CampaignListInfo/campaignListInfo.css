@@ -3,36 +3,41 @@
   display: grid;
   grid-template-columns: 60px 2.5fr 1.3fr 1fr 1.1fr 0.9fr 1.1fr 100px;
   align-items: center;
-  font-size: 0.9rem;
-  color: #313131;
+  font-size: var(--font-sm);
+  color: var(--text-primary);
   padding: 10px 20px;
   column-gap: 8px;
-  background-color: #FFFFFF; /* BACKGROUND BRANCO */
-  border-radius: 10px; /* BORDER RADIUS */
+  background-color: var(--bg-white);
+  border-radius: var(--border-radius-lg);
 }
 
 .cGerenciaHeader {
   font-weight: 600;
-  margin-bottom: 10px; /* 10px ENTRE HEADER E CORPO */
+  margin-bottom: var(--spacing-sm);
 }
 
 .cGerenciaList {
   display: flex;
   flex-direction: column;
-  gap: 5px; /* 5px ENTRE CADA ITEM */
+  gap: var(--spacing-xs);
 }
 
 .cGerenciaCard {
   font-weight: 300;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+  transition: background-color 0.2s;
 }
 
-.cGerenciaCard span:nth-child(8) {
-  border: 1px solid #26BAB3;
-  color: #26BAB3;
+.cGerenciaCard:hover {
+  background-color: var(--bg-hover);
+}
+
+.statusBadge {
+  border: 1px solid;
   padding: 4px 10px;
   border-radius: 12px;
-  font-size: 0.8rem;
+  font-size: var(--font-xs);
   text-align: center;
   justify-self: start;
   white-space: nowrap;
