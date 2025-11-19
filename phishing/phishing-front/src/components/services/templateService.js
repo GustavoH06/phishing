@@ -34,6 +34,10 @@ export const templateService = {
         formData.append('desc', templateData.description);
       }
       
+      if (templateData.preview_data) {
+        formData.append('preview_data', templateData.preview_data);
+      }
+      
       const response = await api.post('/template/', formData, {
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
@@ -49,6 +53,32 @@ export const templateService = {
                       error.response?.data?.error || 
                       'Erro ao criar template';
       throw new Error(errorMsg);
+    }
+  },
+
+  async updateTemplate(id, templateData) {
+    try {
+      console.log('Atualizando template ID:', id, templateData);
+      
+      const formData = new FormData();
+      formData.append('id', id);
+      if (templateData.name) formData.append('name', templateData.name);
+      if (templateData.description) formData.append('desc', templateData.description);
+      if (templateData.code) formData.append('code', templateData.code);
+      if (templateData.preview_data) formData.append('preview_data', templateData.preview_data);
+      
+      const response = await api.put(`/template/`, formData, {
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+      });
+      
+      console.log('Template atualizado:', response.data);
+      return response.data;
+      
+    } catch (error) {
+      console.error('Erro ao atualizar template:', error);
+      throw new Error(error.response?.data?.message || 'Erro ao atualizar template');
     }
   },
 

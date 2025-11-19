@@ -1,74 +1,166 @@
-import { useState, useEffect } from 'react';
-import { templateService } from '../../services/templateService';
+import { useState } from 'react';
 import './templateCriar.css';
 
-function TemplateList({ onTemplateSelect, selectedTemplateId, refreshTrigger }) {
-  const [templates, setTemplates] = useState([]);
-  const [loading, setLoading] = useState(false);
+function TemplateEditor({ content, onContentChange }) {
+  const [editorContent, setEditorContent] = useState(content || '');
+  const [activeFont, setActiveFont] = useState('Arial');
+  const [activeSize, setActiveSize] = useState('14px');
 
-  useEffect(() => {
-    loadTemplates();
-  }, [refreshTrigger]);
-
-  const loadTemplates = async () => {
-    setLoading(true);
-    try {
-      const response = await templateService.getTemplates();
-      setTemplates(response.items || []);
-    } catch (error) {
-      console.error('Erro ao carregar templates:', error);
-      setTemplates([]);
-    } finally {
-      setLoading(false);
+  const handleContentChange = (newContent) => {
+    setEditorContent(newContent);
+    if (onContentChange) {
+      onContentChange(newContent);
     }
   };
 
-  if (loading) {
-    return (
-      <div className="loading-container">
-        <span>Carregando templates...</span>
-      </div>
-    );
-  }
+  const handleFormat = (command, value = '') => {
+    document.execCommand(command, false, value);
 
-  if (templates.length === 0) {
-    return (
-      <div className="empty-state">
-        <span>Nenhum template encontrado</span>
-        <p style={{ fontSize: '12px', color: '#666', marginTop: '8px' }}>
-          Crie seu primeiro template usando o formulário ao lado
-        </p>
-      </div>
-    );
-  }
+    const newContent = document.querySelector('.editor-content').innerHTML;
+    handleContentChange(newContent);
+  };
+
+  const handleFontChange = (font) => {
+    setActiveFont(font);
+    handleFormat('fontName', font);
+  };
+
+  const handleSizeChange = (size) => {
+    setActiveSize(size);
+    handleFormat('fontSize', size);
+  };
+
+  const fonts = ['Arial', 'Helvetica', 'Times New Roman', 'Georgia', 'Verdana'];
+  const sizes = ['1', '2', '3', '4', '5', '6', '7'];
 
   return (
-    <table className="template-list">
-      <thead>
-        <tr>
-          <th>Id</th>
-          <th>Nome</th>
-          <th>Criado em</th>
-        </tr>
-      </thead>
-      <tbody>
-        {templates.map((template) => (
-          <tr 
-            key={template.id} 
-            onClick={() => onTemplateSelect && onTemplateSelect(template)}
-            style={{ 
-              backgroundColor: selectedTemplateId === template.id ? '#e6f2ff' : 'transparent',
-              cursor: 'pointer'
-            }}
+    <div className="template-editor-section">
+      <h3>Template</h3>
+      
+      <div className="editor-toolbar">
+        <div className="toolbar-group">
+          <select 
+            className="toolbar-select"
+            value={activeFont}
+            onChange={(e) => handleFontChange(e.target.value)}
           >
-            <td>{template.id}</td>
-            <td>{template.name}</td>
-            <td>{new Date(template.created_at).toLocaleDateString('pt-BR')}</td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
+            {fonts.map(font => (
+              <option key={font} value={font}>{font}</option>
+            ))}
+          </select>
+          
+          <select 
+            className="toolbar-select"
+            value={activeSize}
+            onChange={(e) => handleSizeChange(e.target.value)}
+          >
+            {sizes.map(size => (
+              <option key={size} value={size}>{size}</option>
+            ))}
+          </select>
+        </div>
+
+        <div className="toolbar-group">
+          <button 
+            className="toolbar-button"
+            onClick={() => handleFormat('bold')}
+            title="Negrito"
+          >
+            <strong>B</strong>
+          </button>
+          <button 
+            className="toolbar-button"
+            onClick={() => handleFormat('italic')}
+            title="Itálico"
+          >
+            <em>I</em>
+          </button>
+          <button 
+            className="toolbar-button"
+            onClick={() => handleFormat('underline')}
+            title="Sublinhado"
+          >
+            <u>U</u>
+          </button>
+        </div>
+
+        <div className="toolbar-group">
+          <button 
+            className="toolbar-button"
+            onClick={() => handleFormat('justifyLeft')}
+            title="Alinhar à esquerda"
+          >
+            ⬅
+          </button>
+          <button 
+            className="toolbar-button"
+            onClick={() => handleFormat('justifyCenter')}
+            title="Centralizar"
+          >
+            ↔
+          </button>
+          <button 
+            className="toolbar-button"
+            onClick={() => handleFormat('justifyRight')}
+            title="Alinhar à direita"
+          >
+            ➡
+          </button>
+          <button 
+            className="toolbar-button"
+            onClick={() => handleFormat('justifyFull')}
+            title="Justificar"
+          >
+            ≡
+          </button>
+        </div>
+
+        <div className="toolbar-group">
+          <button 
+            className="toolbar-button"
+            onClick={() => handleFormat('insertUnorderedList')}
+            title="Lista não ordenada"
+          >
+            • Lista
+          </button>
+          <button 
+            className="toolbar-button"
+            onClick={() => handleFormat('insertOrderedList')}
+            title="Lista ordenada"
+          >
+            1. Lista
+          </button>
+        </div>
+
+        <div className="toolbar-group">
+          <input 
+            type="color"
+            onChange={(e) => handleFormat('foreColor', e.target.value)}
+            title="Cor do texto"
+            style={{ width: '30px', height: '30px' }}
+          />
+          <button 
+            className="toolbar-button"
+            onClick={() => handleFormat('removeFormat')}
+            title="Remover formatação"
+          >
+            🗑
+          </button>
+        </div>
+      </div>
+
+      <div
+        className="editor-content"
+        contentEditable
+        dangerouslySetInnerHTML={{ __html: editorContent }}
+        onInput={(e) => handleContentChange(e.target.innerHTML)}
+        style={{ 
+          fontFamily: activeFont,
+          fontSize: activeSize
+        }}
+      />
+    </div>
   );
 }
 
-export default TemplateList;
+export default TemplateEditor;

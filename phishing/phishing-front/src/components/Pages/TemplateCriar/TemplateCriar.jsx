@@ -1,91 +1,41 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import Editor, { 
+  Toolbar,
+  BtnBold, 
+  BtnItalic, 
+  BtnUnderline,
+  BtnStrikeThrough,
+  BtnBulletList,
+  BtnUndo,
+  BtnRedo,
+  BtnLink,
+  Separator
+} from 'react-simple-wysiwyg';
 import TemplateList from '../../Modules/TemplateList/TemplateList';
 import { templateService } from '../../services/templateService';
 import './templateCriar.css';
 
 function TemplateCriar() {
   const navigate = useNavigate();
-  const editorRef = useRef(null);
   
   const [formData, setFormData] = useState({
     name: '',
     desc: '',
-    code: ''
+    code: '',
+    preview_data: '' // Novo campo para salvar o preview
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   const [selectedTemplate, setSelectedTemplate] = useState(null);
-  const [editorLoaded, setEditorLoaded] = useState(false);
-  const [editorMode, setEditorMode] = useState('code'); // 'code' ou 'visual'
-
-  // Carregar o script do TinyMCE
-  useEffect(() => {
-    const script = document.createElement('script');
-    script.src = 'https://cdn.tiny.cloud/1/no-api-key/tinymce/6/tinymce.min.js';
-    script.referrerPolicy = 'origin';
-    script.onload = () => {
-      if (window.tinymce) {
-        window.tinymce.init({
-          selector: '#template-editor',
-          height: 500,
-          menubar: 'edit view insert format tools',
-          plugins: [
-            'advlist', 'autolink', 'lists', 'link', 'image', 'charmap', 'preview',
-            'anchor', 'searchreplace', 'visualblocks', 'code', 'fullscreen',
-            'insertdatetime', 'media', 'table', 'help', 'wordcount', 'code'
-          ],
-          toolbar: 'undo redo | blocks | bold italic underline strikethrough | fontfamily fontsize | forecolor backcolor | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link image | code | preview | help',
-          content_style: `
-            body { 
-              font-family: Arial, sans-serif; 
-              font-size: 14px; 
-              line-height: 1.6;
-              margin: 0;
-              padding: 10px;
-            }
-            .mce-content-body {
-              max-width: 600px;
-              margin: 0 auto;
-              background: white;
-              padding: 20px;
-              border-radius: 8px;
-            }
-          `,
-          branding: false,
-          promotion: false,
-          setup: (editor) => {
-            editorRef.current = editor;
-            editor.on('init', () => {
-              setEditorLoaded(true);
-              if (formData.code) {
-                editor.setContent(formData.code);
-              }
-            });
-            editor.on('change', () => {
-              handleInputChange('code', editor.getContent());
-            });
-          }
-        });
-      }
-    };
-    document.head.appendChild(script);
-
-    return () => {
-      if (window.tinymce && editorRef.current) {
-        window.tinymce.remove(editorRef.current);
-      }
-    };
-  }, []);
-
-  // Atualizar conteúdo do editor quando formData.code mudar
-  useEffect(() => {
-    if (editorRef.current && editorLoaded && formData.code && editorMode === 'visual') {
-      editorRef.current.setContent(formData.code);
-    }
-  }, [formData.code, editorLoaded, editorMode]);
+  const [previewVariables, setPreviewVariables] = useState({
+    title: 'Título do Email',
+    body: '<p>Este é o conteúdo principal do email que será personalizado para cada campanha.</p>',
+    name: 'Nome do Usuário',
+    button_text: 'Clique Aqui'
+  });
 
   const handleInputChange = (field, value) => {
     setFormData(prev => ({
@@ -93,6 +43,41 @@ function TemplateCriar() {
       [field]: value
     }));
     if (error) setError('');
+  };
+
+  const handleEditorChange = (e) => {
+    const htmlContent = e.target.value;
+    handleInputChange('code', htmlContent);
+    // Atualizar preview em tempo real
+    updatePreviewData(htmlContent);
+  };
+
+  const updatePreviewData = (htmlContent) => {
+    // Criar o preview com as variáveis substituídas
+    const previewHtml = htmlContent
+      .replace(/{{title}}/g, previewVariables.title)
+      .replace(/{{body}}/g, previewVariables.body)
+      .replace(/{{name}}/g, previewVariables.name)
+      .replace(/{{link}}/g, '#')
+      .replace(/{{button_text}}/g, previewVariables.button_text);
+
+    // Salvar no formData
+    setFormData(prev => ({
+      ...prev,
+      preview_data: previewHtml
+    }));
+  };
+
+  const handlePreviewVariableChange = (variable, value) => {
+    setPreviewVariables(prev => ({
+      ...prev,
+      [variable]: value
+    }));
+    
+    // Atualizar preview quando variáveis mudarem
+    if (formData.code) {
+      updatePreviewData(formData.code);
+    }
   };
 
   const handleTemplateSelect = (template) => {
@@ -105,11 +90,20 @@ function TemplateCriar() {
   const loadTemplateData = async (templateId) => {
     try {
       const template = await templateService.getTemplateById(templateId);
+      
+      let editorContent = template.code || '';
+      
       setFormData({
         name: template.name || '',
         desc: template.description || '',
-        code: template.code || ''
+        code: editorContent,
+        preview_data: template.preview_data || ''
       });
+
+      // Se existir preview_data, extrair as variáveis
+      if (template.preview_data) {
+        // Aqui você pode extrair os valores padrão do preview se quiser
+      }
     } catch (err) {
       console.error('Erro ao carregar template:', err);
       setError('Erro ao carregar dados do template');
@@ -117,7 +111,7 @@ function TemplateCriar() {
   };
 
   const validateTemplate = (code) => {
-    const requiredVariables = ['{{title}}', '{{body}}', '{{name}}', '{{link}}'];
+    const requiredVariables = ['{{title}}', '{{body}}', '{{name}}', '{{link}}', '{{button_text}}'];
     const missingVariables = requiredVariables.filter(variable => !code.includes(variable));
     
     if (missingVariables.length > 0) {
@@ -148,25 +142,28 @@ function TemplateCriar() {
       setError('');
       setSuccess('');
 
+      // Garantir que o preview_data está atualizado
+      const finalPreviewData = formData.preview_data || formData.code;
+
       if (selectedTemplate) {
-        // Atualizar template existente
         await templateService.updateTemplate(selectedTemplate.id, {
           name: formData.name,
           description: formData.desc || '',
-          code: formData.code
+          code: formData.code,
+          preview_data: finalPreviewData // Salvar o preview
         });
         setSuccess('Template atualizado com sucesso!');
       } else {
-        // Criar novo template
         await templateService.createTemplate({
           name: formData.name,
           description: formData.desc || '',
-          code: formData.code
+          code: formData.code,
+          preview_data: finalPreviewData // Salvar o preview
         });
         setSuccess('Template criado com sucesso!');
       }
 
-      setFormData({ name: '', desc: '', code: '' });
+      setFormData({ name: '', desc: '', code: '', preview_data: '' });
       setSelectedTemplate(null);
       setRefreshTrigger(prev => prev + 1);
       
@@ -182,53 +179,40 @@ function TemplateCriar() {
     }
   };
 
-  const handleClearForm = () => {
-    setFormData({ name: '', desc: '', code: '' });
-    setError('');
-    setSuccess('');
-    setSelectedTemplate(null);
-  };
-
   const loadTemplateBase = () => {
     const baseTemplate = `
-  <div class="template-container">
-    <div class="template-content">
-      <div class="template-header">
-        <h1>{{title}}</h1>
-      </div>
-      
-      <div class="template-body">
-        <h2>Olá {{name}},</h2>
-        
-        <div class="template-body-content">
-          {{body}}
-        </div>
-        
-        <div class="template-button-container">
-          <a href="{{link}}" class="template-action-button">
-            {{button_text}}
-          </a>
-        </div>
-      </div>
-      
-      <div class="template-footer">
-        <p>Esta é uma mensagem automática, por favor não responda este email.</p>
-        <p>&copy; 2024 Sua Empresa. Todos os direitos reservados.</p>
-      </div>
-    </div>
-  </div>`;
+<div style="text-align: center; padding-bottom: 20px; border-bottom: 2px solid #e50914; margin-bottom: 20px;">
+  <h1 style="color: #e50914; margin: 0; font-size: 28px;">{{title}}</h1>
+</div>
 
-    setTimeout(() => {
-      setFormData(prev => ({
-        ...prev,
-        code: baseTemplate.trim()
-      }));
-      setError('');
-    }, 0);
+<div style="margin: 25px 0; color: #333;">
+  <h2 style="color: #333; margin-bottom: 15px;">Olá {{name}},</h2>
+  
+  <div style="font-size: 16px; line-height: 1.6;">
+    {{body}}
+  </div>
+  
+  <div style="text-align: center; margin: 25px 0;">
+    <a href="{{link}}" style="display: inline-block; background-color: #e50914; color: white; padding: 12px 30px; text-decoration: none; border-radius: 4px; font-weight: bold; font-size: 16px;">
+      {{button_text}}
+    </a>
+  </div>
+</div>
+
+<div style="border-top: 1px solid #ddd; padding-top: 20px; font-size: 12px; color: #999; text-align: center;">
+  <p>Esta é uma mensagem automática, por favor não responda este email.</p>
+</div>`;
+
+    setFormData(prev => ({
+      ...prev,
+      code: baseTemplate.trim()
+    }));
+    updatePreviewData(baseTemplate.trim());
+    setError('');
   };
 
   const renderPreview = () => {
-    if (!formData.code) {
+    if (!formData.preview_data && !formData.code) {
       return (
         <div className="previewPlaceholder">
           O preview do template será exibido aqui quando você criar o conteúdo
@@ -236,12 +220,7 @@ function TemplateCriar() {
       );
     }
 
-    const previewHtml = formData.code
-      .replace(/{{title}}/g, 'Título do Email')
-      .replace(/{{body}}/g, '<p>Este é o conteúdo principal do email que será personalizado para cada campanha.</p>')
-      .replace(/{{name}}/g, 'Nome do Usuário')
-      .replace(/{{link}}/g, '#')
-      .replace(/{{button_text}}/g, 'Clique Aqui');
+    const previewHtml = formData.preview_data || formData.code;
 
     return (
       <div 
@@ -251,21 +230,7 @@ function TemplateCriar() {
     );
   };
 
-  const toggleEditorMode = () => {
-    setEditorMode(prev => {
-      const newMode = prev === 'code' ? 'visual' : 'code';
-      
-      // Sincronizar conteúdo entre os modos
-      if (newMode === 'visual' && editorRef.current && editorLoaded) {
-        editorRef.current.setContent(formData.code);
-      } else if (newMode === 'code' && editorRef.current && editorLoaded) {
-        const visualContent = editorRef.current.getContent();
-        setFormData(prev => ({ ...prev, code: visualContent }));
-      }
-      
-      return newMode;
-    });
-  };
+  const editorValue = formData.code;
 
   return (
     <div className="mainContainer">
@@ -333,47 +298,84 @@ function TemplateCriar() {
                 <div className="formGroup">
                   <div className="editorHeader">
                     <label>Conteúdo do Template *</label>
-                    <div className="editorControls">
-                      <button 
-                        type="button" 
-                        onClick={loadTemplateBase}
-                        className="btnExemplo"
-                      >
-                        Template Base
-                      </button>
-                      <button 
-                        type="button" 
-                        onClick={toggleEditorMode}
-                        className="btnToggleMode"
-                      >
-                        {editorMode === 'code' ? '🔧 Modo Visual' : '📝 Modo Código'}
-                      </button>
-                    </div>
+                    <button 
+                      type="button" 
+                      onClick={loadTemplateBase}
+                      className="btnExemplo"
+                    >
+                      Template Base
+                    </button>
                   </div>
                   
-                  {editorMode === 'code' ? (
-                    <textarea 
-                      className="codeEditor"
-                      value={formData.code}
-                      onChange={(e) => handleInputChange('code', e.target.value)}
-                      placeholder="Digite o código HTML do template aqui..."
-                      rows="20"
-                      disabled={loading}
-                    />
-                  ) : (
-                    <>
-                      <textarea 
-                        id="template-editor"
-                        style={{ display: 'none' }}
+                  <Editor
+                    value={editorValue}
+                    onChange={handleEditorChange}
+                    containerProps={{
+                      style: { 
+                        border: '1px solid #ccc',
+                        borderRadius: '4px',
+                        minHeight: '400px',
+                        resize: 'vertical'
+                      }
+                    }}
+                  >
+                    <Toolbar>
+                      <BtnUndo />
+                      <BtnRedo />
+                      <Separator />
+                      <BtnBold />
+                      <BtnItalic />
+                      <BtnUnderline />
+                      <BtnStrikeThrough />
+                      <Separator />
+                      <BtnBulletList />
+                      <Separator />
+                      <BtnLink />
+                    </Toolbar>
+                  </Editor>
+                </div>
+
+                {/* Configuração das Variáveis do Preview */}
+                <div className="previewVariablesConfig">
+                  <h4>Configurar Preview:</h4>
+                  <div className="variablesInputs">
+                    <div className="variableInput">
+                      <label>Título:</label>
+                      <input 
+                        type="text" 
+                        value={previewVariables.title}
+                        onChange={(e) => handlePreviewVariableChange('title', e.target.value)}
+                        placeholder="Título do email"
                       />
-                      
-                      {!editorLoaded && (
-                        <div className="editorLoading">
-                          <p>Carregando editor visual...</p>
-                        </div>
-                      )}
-                    </>
-                  )}
+                    </div>
+                    <div className="variableInput">
+                      <label>Nome:</label>
+                      <input 
+                        type="text" 
+                        value={previewVariables.name}
+                        onChange={(e) => handlePreviewVariableChange('name', e.target.value)}
+                        placeholder="Nome do usuário"
+                      />
+                    </div>
+                    <div className="variableInput">
+                      <label>Texto do Botão:</label>
+                      <input 
+                        type="text" 
+                        value={previewVariables.button_text}
+                        onChange={(e) => handlePreviewVariableChange('button_text', e.target.value)}
+                        placeholder="Texto do botão"
+                      />
+                    </div>
+                    <div className="variableInput full-width">
+                      <label>Corpo do Email:</label>
+                      <textarea 
+                        value={previewVariables.body.replace(/<[^>]*>/g, '')} // Remover HTML para edição
+                        onChange={(e) => handlePreviewVariableChange('body', `<p>${e.target.value}</p>`)}
+                        placeholder="Conteúdo do email"
+                        rows="3"
+                      />
+                    </div>
+                  </div>
                 </div>
 
                 <div className="variablesInfo">
@@ -400,6 +402,9 @@ function TemplateCriar() {
                       <span>Texto do botão</span>
                     </div>
                   </div>
+                  <p className="variablesWarning">
+                    <strong>Importante:</strong> Todas as variáveis devem estar presentes no template!
+                  </p>
                 </div>
               </div>
             </div>
@@ -415,7 +420,18 @@ function TemplateCriar() {
             <div className="formActions">
               <button 
                 className="btnCancelar" 
-                onClick={handleClearForm}
+                onClick={() => {
+                  setFormData({ name: '', desc: '', code: '', preview_data: '' });
+                  setPreviewVariables({
+                    title: 'Título do Email',
+                    body: '<p>Este é o conteúdo principal do email que será personalizado para cada campanha.</p>',
+                    name: 'Nome do Usuário',
+                    button_text: 'Clique Aqui'
+                  });
+                  setError('');
+                  setSuccess('');
+                  setSelectedTemplate(null);
+                }}
                 disabled={loading}
               >
                 Limpar

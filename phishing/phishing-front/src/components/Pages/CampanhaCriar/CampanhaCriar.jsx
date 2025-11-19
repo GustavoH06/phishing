@@ -14,9 +14,9 @@ function CampanhaCriar() {
     end_date: '',
     send_time: '',
     subject_text: '',
-    title_text: '',
-    body_text: '',
-    button_text: '',
+    title_text: 'Título do Email',
+    body_text: 'Conteúdo do email...',
+    button_text: 'Clique Aqui',
     email: ''
   });
   
@@ -27,13 +27,11 @@ function CampanhaCriar() {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
-  // Carregar grupos e templates
   useEffect(() => {
     loadGroups();
     loadTemplates();
   }, []);
 
-  // Carregar dados do template quando selecionado
   useEffect(() => {
     if (formData.template_id) {
       loadTemplateData(formData.template_id);
@@ -65,16 +63,14 @@ function CampanhaCriar() {
       const template = await templateService.getTemplateById(templateId);
       setSelectedTemplate(template);
       
-      // Preencher campos padrão baseados no template
-      if (template) {
-        setFormData(prev => ({
-          ...prev,
-          subject_text: prev.subject_text || 'Assunto Importante',
-          title_text: prev.title_text || 'Título do Email',
-          body_text: prev.body_text || 'Conteúdo do email...',
-          button_text: prev.button_text || 'Clique Aqui'
-        }));
-      }
+      // Preencher campos com valores padrão do template
+      setFormData(prev => ({
+        ...prev,
+        subject_text: prev.subject_text || 'Assunto Importante',
+        title_text: prev.title_text || 'Título do Email',
+        body_text: prev.body_text || 'Conteúdo do email...',
+        button_text: prev.button_text || 'Clique Aqui'
+      }));
     } catch (err) {
       console.error('Erro ao carregar template:', err);
     }
@@ -89,15 +85,16 @@ function CampanhaCriar() {
 
   const handleCreateCampaign = async () => {
     // Validações básicas
-    if (!formData.name || !formData.group_id || !formData.start_date || 
-        !formData.end_date || !formData.send_time || !formData.email ||
-        !formData.template_id) {
-      setError('Preencha todos os campos obrigatórios');
-      return;
-    }
+    const requiredFields = [
+      'name', 'group_id', 'template_id', 'start_date', 
+      'end_date', 'send_time', 'email', 'subject_text',
+      'title_text', 'body_text'
+    ];
 
-    if (!formData.subject_text || !formData.title_text || !formData.body_text) {
-      setError('Preencha todos os campos do template');
+    const missingFields = requiredFields.filter(field => !formData[field]);
+    
+    if (missingFields.length > 0) {
+      setError('Preencha todos os campos obrigatórios');
       return;
     }
 
@@ -121,38 +118,19 @@ function CampanhaCriar() {
         end_date: '',
         send_time: '',
         subject_text: '',
-        title_text: '',
-        body_text: '',
-        button_text: '',
+        title_text: 'Título do Email',
+        body_text: 'Conteúdo do email...',
+        button_text: 'Clique Aqui',
         email: ''
       });
       setSelectedTemplate(null);
       
     } catch (err) {
       console.error('Erro ao criar campanha:', err);
-      setError(err.message);
+      setError(err.message || 'Erro ao criar campanha');
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleClearForm = () => {
-    setFormData({
-      name: '',
-      group_id: '',
-      template_id: '',
-      start_date: '',
-      end_date: '',
-      send_time: '',
-      subject_text: '',
-      title_text: '',
-      body_text: '',
-      button_text: '',
-      email: ''
-    });
-    setSelectedTemplate(null);
-    setError('');
-    setSuccess('');
   };
 
   const renderEmailPreview = () => {
@@ -164,6 +142,7 @@ function CampanhaCriar() {
       );
     }
 
+    // Gerar preview dinamicamente do código do template
     const previewHtml = selectedTemplate.code
       .replace(/{{title}}/g, formData.title_text || 'Título do Email')
       .replace(/{{body}}/g, formData.body_text || 'Conteúdo do email...')
@@ -362,7 +341,24 @@ function CampanhaCriar() {
         <div className="actionButtons">
           <button 
             className="btnCancel" 
-            onClick={handleClearForm}
+            onClick={() => {
+              setFormData({
+                name: '',
+                group_id: '',
+                template_id: '',
+                start_date: '',
+                end_date: '',
+                send_time: '',
+                subject_text: '',
+                title_text: 'Título do Email',
+                body_text: 'Conteúdo do email...',
+                button_text: 'Clique Aqui',
+                email: ''
+              });
+              setSelectedTemplate(null);
+              setError('');
+              setSuccess('');
+            }}
             disabled={loading}
           >
             Cancelar

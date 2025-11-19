@@ -28,7 +28,17 @@ export const campaignService = {
     try {
       console.log('Criando nova campanha:', campaignData);
       
+      // Validar campos obrigatórios antes de enviar
+      const requiredFields = ['name', 'group_id', 'email', 'start_date', 'end_date', 'send_time'];
+      const missingFields = requiredFields.filter(field => !campaignData[field]);
+      
+      if (missingFields.length > 0) {
+        throw new Error(`Campos obrigatórios faltando: ${missingFields.join(', ')}`);
+      }
+      
       const formData = new FormData();
+      
+      // Campos obrigatórios
       formData.append('name', campaignData.name);
       formData.append('group_id', campaignData.group_id);
       formData.append('email', campaignData.email);
@@ -36,6 +46,7 @@ export const campaignService = {
       formData.append('end_date', campaignData.end_date);
       formData.append('send_time', campaignData.send_time);
       
+      // Campos opcionais (só adicionar se existirem)
       if (campaignData.template_id) {
         formData.append('template_id', campaignData.template_id);
       }
@@ -55,6 +66,11 @@ export const campaignService = {
         formData.append('desc', campaignData.desc);
       }
       
+      console.log('Dados sendo enviados:');
+      for (let [key, value] of formData.entries()) {
+        console.log(`${key}: ${value}`);
+      }
+      
       const response = await api.post('/campaign/', formData, {
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
@@ -66,8 +82,15 @@ export const campaignService = {
       
     } catch (error) {
       console.error('Erro ao criar campanha:', error);
+      
+      // Log mais detalhado do erro
+      if (error.response?.data) {
+        console.error('Resposta do servidor:', error.response.data);
+      }
+      
       const errorMsg = error.response?.data?.message || 
                       error.response?.data?.error || 
+                      error.message ||
                       'Erro ao criar campanha';
       throw new Error(errorMsg);
     }
