@@ -2,7 +2,6 @@ from ext.database import db
 
 from service import user_service
 from service import campaign_service
-from service import email_service
 
 from cryptography.fernet import Fernet
 import click
@@ -33,12 +32,30 @@ def add_admin():
 @click.argument('id', type=int)
 def run_campaign(id):
     """Runs a campaign"""
-    campaign_service.run_campaign(id)
+    try:
+        campaign_service.run_campaign(id)
+    except ValueError as e:
+        if e.args:
+            if e.args[0] == 'id':
+                print(f'Cant find campaign with the id {id}')
+    except RuntimeError as e:
+        if e.args:
+            if e.args[0] == 'status':
+                print('The campaign cannot be carried out. Perhaps it does not have the "i" status.')
 
 @click.argument('id', type=int)
 def end_campaign(id):
     """Ends a camapign"""
-    campaign_service.end_campaign(id)
+    try:
+        campaign_service.end_campaign(id)
+    except ValueError as e:
+        if e.args:
+            if e.args[0] == 'id':
+                print(f'Cant find campaign with the id {id}')
+    except RuntimeError as e:
+        if e.args:
+            if e.args[0] == 'status':
+                print('The campaign cannot be ended. Perhaps its not active!')
 
 '''
 def populate_db():

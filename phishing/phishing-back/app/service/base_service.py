@@ -154,7 +154,7 @@ class BaseService:
         if self.have_ownership and self.user_id != 0:
             kwargs['creator_id'] = self.user_id
 
-        if not show_deleted:
+        if not show_deleted and self.can_be_deleted:
             kwargs['deleted'] = False
 
         if not fields:
@@ -199,10 +199,6 @@ class BaseService:
             fields += extra_fields
 
         p = self.repo.get_page_by_filter(page=page, per_page=per_page, exact=exact, like=kwargs)
-
-        #teste
-        print(p)
-
         items = []
         for item in p:
             items.append(item.to_dict(only=fields))

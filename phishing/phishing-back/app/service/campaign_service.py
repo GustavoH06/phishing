@@ -58,14 +58,6 @@ class CampaignService(BaseService):
             replace_existing=True,
             misfire_grace_time=30
         )
-
-    def check_active_campaign(self, **kwargs)-> bool:
-        """Checks if theres a active campaign with kwargs parameters"""
-        campaigns = self.get_by_filter(**kwargs)
-        for campaign in campaigns:
-            if campaign['status'] == 'a':
-                return True
-        return False
     
     def validate_dates(self, start_date, end_date):
         if start_date >= end_date:
@@ -123,18 +115,25 @@ class CampaignService(BaseService):
 def end_campaign(campaign_id:int):
     with scheduler.app.app_context():
         cs = CampaignService(0)
-        model = cs.repo.get_by_id(id=campaign_id)
-        cs.repo.update(model, status='f')
+        campaign = cs.repo.get_by_id(id=campaign_id)
+        if not campaign:
+            raise ValueError('id')
+        if campaign.status != 'a':
+            raise RuntimeError('status')
+        cs.repo.update(campaign, status='f')
         try:
             scheduler.remove_job(f'camp_{campaign_id}_end')
         except:
             pass
 
-
 def run_campaign(campaign_id:int):
     with scheduler.app.app_context():
         cs = CampaignService(0)
         campaign = cs.repo.get_by_id(campaign_id)
+        if not campaign:
+            raise ValueError('id')
+        if campaign.deleted or campaign.status != 'i':
+            raise RuntimeError('status')
         cs.update(id=campaign_id, status='a')
         
         template = Template(campaign.template.code)
@@ -160,4 +159,3 @@ def run_campaign(campaign_id:int):
             scheduler.remove_job(f'camp_{campaign_id}_start')
         except:
             pass
-
