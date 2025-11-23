@@ -10,16 +10,32 @@ export default function Piechart({ conversion = 0, total = 100, clicked = 0 }) {
         { 
             id: 0, 
             value: clickedValue, 
-            label: 'Clicados',
+            label: `Clicados (${clickedValue})`,
             color: '#26BAB3'
         },
         { 
             id: 1, 
             value: notClickedValue, 
-            label: 'Nao Clicados',
+            label: `Nao Clicados (${notClickedValue})`,
             color: '#B8B8B8'
         },
     ].filter(item => item.value > 0);
+
+    // Se não há dados, mostra um estado vazio
+    if (total === 0) {
+        return (
+            <div style={{ 
+                height: 140, 
+                display: 'flex', 
+                alignItems: 'center', 
+                justifyContent: 'center',
+                color: '#666',
+                fontSize: '14px'
+            }}>
+                Nenhum dado disponivel
+            </div>
+        );
+    }
 
     return (
         <PieChart
@@ -27,7 +43,6 @@ export default function Piechart({ conversion = 0, total = 100, clicked = 0 }) {
                 {
                     data: chartData,
                     highlightScope: { fade: 'global', highlight: 'item' },
-                    faded: { innerRadius: 30, additionalRadius: -30, color: 'gray' },
                 },
             ]}
             {...pieParams}

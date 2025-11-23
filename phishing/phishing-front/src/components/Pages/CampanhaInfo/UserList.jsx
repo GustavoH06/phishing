@@ -1,3 +1,4 @@
+// src/Pages/CampanhaInfo/UserList.jsx
 import React, { useState, useEffect } from 'react';
 import { campaignService } from '../../services/campaignService';
 import "./campanhaInfo.css";
@@ -29,9 +30,29 @@ function UserList({ campaignId }){
     const formatDate = (dateString) => {
         if (!dateString) return 'N/A';
         try {
-            return new Date(dateString).toLocaleDateString('pt-BR');
+            const date = new Date(dateString);
+            return date.toLocaleDateString('pt-BR') + ' ' + date.toLocaleTimeString('pt-BR', {
+                hour: '2-digit',
+                minute: '2-digit'
+            });
         } catch {
             return 'Data invalida';
+        }
+    };
+
+    const getStatusBadge = (interacted) => {
+        if (interacted) {
+            return (
+                <span className="clicked-yes" title="Usuario clicou no link">
+                    Sim
+                </span>
+            );
+        } else {
+            return (
+                <span className="clicked-no" title="Usuario nao clicou no link">
+                    Nao
+                </span>
+            );
         }
     };
 
@@ -39,15 +60,16 @@ function UserList({ campaignId }){
         return (
             <>
                 <div className="userListHeader">
-                    <span>Id</span>
+                    <span>ID Usuario</span>
                     <span>Nome</span>
                     <span>E-mail</span>
                     <span>Clicou</span>
-                    <span>Data Click</span>
+                    <span>Data do Click</span>
                 </div>
                 <div className="userListContainer">
                     <div className="loading-state">
-                        Carregando usuarios...
+                        <div className="spinner"></div>
+                        <p>Carregando usuarios...</p>
                     </div>
                 </div>
             </>
@@ -58,11 +80,11 @@ function UserList({ campaignId }){
         return (
             <>
                 <div className="userListHeader">
-                    <span>Id</span>
+                    <span>ID Usuario</span>
                     <span>Nome</span>
                     <span>E-mail</span>
                     <span>Clicou</span>
-                    <span>Data Click</span>
+                    <span>Data do Click</span>
                 </div>
                 <div className="userListContainer">
                     <div className="error-message">
@@ -76,11 +98,11 @@ function UserList({ campaignId }){
     return (
         <>
             <div className="userListHeader">
-                <span>Id</span>
+                <span>ID Usuario</span>
                 <span>Nome</span>
                 <span>E-mail</span>
                 <span>Clicou</span>
-                <span>Data Click</span>
+                <span>Data do Click</span>
             </div>
 
             <div className="userListContainer">
@@ -94,9 +116,7 @@ function UserList({ campaignId }){
                             <span>{user.target?.id || 'N/A'}</span>
                             <span>{user.target?.name || 'N/A'}</span>
                             <span>{user.target?.email || 'N/A'}</span>
-                            <span className={user.interacted ? 'clicked-yes' : 'clicked-no'}>
-                                {user.interacted ? 'Sim' : 'Nao'}
-                            </span>
+                            <span>{getStatusBadge(user.interacted)}</span>
                             <span>{user.interacted ? formatDate(user.interaction_date) : 'N/A'}</span>
                         </div>
                     ))

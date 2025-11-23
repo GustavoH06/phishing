@@ -8,7 +8,8 @@ function Conversao({ campaignId }) {
         conversionRate: 0,
         totalClicks: 0,
         totalEmails: 0,
-        loading: true
+        loading: true,
+        error: null
     });
 
     useEffect(() => {
@@ -19,18 +20,23 @@ function Conversao({ campaignId }) {
 
     const loadCampaignStats = async () => {
         try {
-            setStats(prev => ({ ...prev, loading: true }));
+            setStats(prev => ({ ...prev, loading: true, error: null }));
             const campaignStats = await campaignService.getCampaignStats(campaignId);
             
             setStats({
                 conversionRate: campaignStats.conversionRate,
                 totalClicks: campaignStats.clickedEmails,
                 totalEmails: campaignStats.totalEmails,
-                loading: false
+                loading: false,
+                error: null
             });
         } catch (error) {
             console.error('Erro ao carregar estatisticas:', error);
-            setStats(prev => ({ ...prev, loading: false }));
+            setStats(prev => ({
+                ...prev, 
+                loading: false, 
+                error: 'Erro ao carregar estatisticas'
+            }));
         }
     };
 
@@ -41,6 +47,16 @@ function Conversao({ campaignId }) {
     const formatClickCount = (clicks, total) => {
         return `${clicks}/${total}`;
     };
+
+    if (stats.error) {
+        return (
+            <div className="conversaoContainer">
+                <div className="error-message">
+                    {stats.error}
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="conversaoContainer">

@@ -29,19 +29,24 @@ export const campaignService = {
     try {
       console.log('Buscando estatísticas da campanha:', campaignId);
       
-      // Buscar emails da campanha para calcular estatísticas
-      const emailsResponse = await api.get(`/campaign/${campaignId}/email?per_page=1000`);
-      const emails = emailsResponse.data.items || [];
+      // Primeira chamada: buscar todos os emails (sem filtro)
+      const allEmailsResponse = await api.get(`/campaign/${campaignId}/email?per_page=1000`);
+      const allEmails = allEmailsResponse.data.items || [];
+      const totalEmails = allEmails.length;
       
-      const totalEmails = emails.length;
-      const clickedEmails = emails.filter(email => email.interacted).length;
-      const conversionRate = totalEmails > 0 ? (clickedEmails / totalEmails) * 100 : 0;
+      // Segunda chamada: buscar apenas os que interagiram (interacted=true)
+      const clickedEmailsResponse = await api.get(`/campaign/${campaignId}/email?interacted=true&per_page=1000`);
+      const clickedEmails = clickedEmailsResponse.data.items || [];
+      const totalClicked = clickedEmails.length;
+      
+      // Calcular taxa de conversão
+      const conversionRate = totalEmails > 0 ? (totalClicked / totalEmails) * 100 : 0;
       
       return {
         totalEmails,
-        clickedEmails,
+        clickedEmails: totalClicked,
         conversionRate: Math.round(conversionRate * 100) / 100,
-        emails
+        emails: allEmails // Retorna todos os emails para a lista
       };
       
     } catch (error) {
